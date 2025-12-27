@@ -2,6 +2,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,15 +40,21 @@ export default function SignupPage({ setCurrentPage }) {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
-      // Simulate successful signup
-      alert("Account created successfully! Welcome to Chill Thrive ❄️");
-      setCurrentPage("Hero"); // Redirect to home after signup
+      try {
+        await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+        alert("Account created successfully! Welcome to Chill Thrive ❄️");
+        setCurrentPage("Hero"); // Redirect to home after signup
+      } catch (error) {
+        setErrors({ firebase: error.message });
+        console.error("Signup error:", error);
+        alert(error.message);
+      }
     }
   };
 
@@ -81,6 +89,7 @@ export default function SignupPage({ setCurrentPage }) {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {errors.firebase && <p className="text-sm text-red-600">{errors.firebase}</p>}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-slate-700 font-medium">
                   Full Name

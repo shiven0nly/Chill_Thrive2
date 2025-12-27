@@ -1,6 +1,8 @@
 // LoginPage.jsx
 'use client';
 import React, { useState } from 'react';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,12 +12,19 @@ import { ArrowLeft } from 'lucide-react';
 export default function LoginPage({ setCurrentPage }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Simulate login - in real app, connect to auth
-    console.log('Logging in with:', { email, password });
-    setCurrentPage('Hero'); // or dashboard after login
+    setError(null);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      setCurrentPage('Hero'); // or dashboard after login
+    } catch (error) {
+      setError(error.message);
+      console.error('Login error:', error);
+      alert(error.message);
+    }
   };
 
   return (
