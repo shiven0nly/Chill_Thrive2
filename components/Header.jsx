@@ -4,6 +4,8 @@ import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
 import { motion } from 'framer-motion';
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "../lib/firebase";
 
 const menuItems = [
   { name: "Home", value: "Home" },
@@ -15,6 +17,7 @@ const menuItems = [
 export const HeroHeader = ({ setCurrentPage }) => {
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
 
   React.useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -22,10 +25,28 @@ export const HeroHeader = ({ setCurrentPage }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const navigateTo = (page) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
     setIsMobileMenuOpen(false); 
+  };
+
+  const handleLogout = () => {
+    signOut(auth).then(() => {
+      navigateTo("Home");
+    });
   };
 
   return (
@@ -66,9 +87,15 @@ export const HeroHeader = ({ setCurrentPage }) => {
             className="cursor-pointer hover:font-semibold hover:underline hover:text-blue-500"
               variant="secondary"
               size="sm"
-              onClick={() => navigateTo("Login")}
+              onClick={() => {
+                if (isLoggedIn) {
+                  handleLogout();
+                } else {
+                  navigateTo("Login");
+                }
+              }}
             >
-              Login
+              {isLoggedIn ? "Logout" : "Login"}
             </Button>
             <Button
               size="sm"
@@ -130,9 +157,15 @@ active:border-b-[2px] active:brightness-90 active:translate-y-[2px]"
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => navigateTo("Login")}
+                  onClick={() => {
+                    if (isLoggedIn) {
+                      handleLogout();
+                    } else {
+                      navigateTo("Login");
+                    }
+                  }}
                 >
-                  Login
+                  {isLoggedIn ? "Logout" : "Login"}
                 </Button>
                 <button
                   className="cursor-pointer transition-all bg-blue-500 text-white py-2 rounded-lg
