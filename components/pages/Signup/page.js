@@ -2,8 +2,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +16,6 @@ export default function SignupPage({ setCurrentPage }) {
     confirmPassword: "",
   });
 
-  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     setFormData({
@@ -27,35 +24,10 @@ export default function SignupPage({ setCurrentPage }) {
     });
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!formData.email.trim()) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
-    if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-    return newErrors;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-    } else {
-      try {
-        await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-        alert("Account created successfully! Welcome to Chill Thrive ❄️");
-        setCurrentPage("Hero"); // Redirect to home after signup
-      } catch (error) {
-        setErrors({ firebase: error.message });
-        console.error("Signup error:", error);
-        alert(error.message);
-      }
-    }
+    setCurrentPage("Hero"); // Redirect to home after signup
   };
 
   return (
@@ -89,7 +61,6 @@ export default function SignupPage({ setCurrentPage }) {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {errors.firebase && <p className="text-sm text-red-600">{errors.firebase}</p>}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-slate-700 font-medium">
                   Full Name
@@ -103,7 +74,6 @@ export default function SignupPage({ setCurrentPage }) {
                   onChange={handleChange}
                   className="h-12"
                 />
-                {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
               </div>
 
               <div className="space-y-2">
@@ -119,7 +89,6 @@ export default function SignupPage({ setCurrentPage }) {
                   onChange={handleChange}
                   className="h-12"
                 />
-                {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
               </div>
 
               <div className="space-y-2">
@@ -135,7 +104,6 @@ export default function SignupPage({ setCurrentPage }) {
                   onChange={handleChange}
                   className="h-12"
                 />
-                {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
               </div>
 
               <div className="space-y-2">
@@ -151,7 +119,6 @@ export default function SignupPage({ setCurrentPage }) {
                   onChange={handleChange}
                   className="h-12"
                 />
-                {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword}</p>}
               </div>
         <div className="flex justify-center items-center">
               <Button
